@@ -21,13 +21,15 @@ int gallopLeft(int key, Array& arr, int base, int len) {
     while (ofs < len && arr[base + ofs] < key) {
         lastOfs = ofs;
         ofs = (ofs << 1) + 1;
-        if (ofs > len) ofs = len;
+        if (ofs > len)
+            ofs = len;
     }
     int lo = lastOfs;
     int hi = ofs;
     while (lo < hi) {
         int mid = (lo + hi) / 2;
-        if (arr[base + mid] < key) lo = mid + 1;
+        if (arr[base + mid] < key)
+            lo = mid + 1;
         else hi = mid;
     }
     return lo;
@@ -39,13 +41,15 @@ int gallopRight(int key, Array& arr, int base, int len) {
     while (ofs < len && key >= arr[base + ofs]) {
         lastOfs = ofs;
         ofs = (ofs << 1) + 1;
-        if (ofs > len) ofs = len;
+        if (ofs > len)
+            ofs = len;
     }
     int lo = lastOfs;
     int hi = ofs;
     while (lo < hi) {
         int mid = (lo + hi) / 2;
-        if (key >= arr[base + mid]) lo = mid + 1;
+        if (key >= arr[base + mid])
+            lo = mid + 1;
         else hi = mid;
     }
     return lo;
@@ -108,7 +112,6 @@ Array Run(Array& arr, int minrun) {
     run.resize(1);
     run[0] = arr[0];
 
-    // 1️⃣ Находим естественный run (возрастающий или убывающий)
     while (i + 1 < arr.getSize() && ((arr[i] <= arr[i + 1]) != needReverse)) {
         i++;
         run.resize(run.getSize() + 1);
@@ -122,10 +125,13 @@ Array Run(Array& arr, int minrun) {
     }
 
     int runSize = run.getSize();
-    int targetSize = (minrun < arr.getSize() + runSize) ? minrun : (runSize + arr.getSize());
+    int targetSize;
+    if (minrun < arr.getSize() + runSize)
+        targetSize = minrun;
+    else
+        targetSize = (runSize + arr.getSize());
 
     while (run.getSize() < targetSize && arr.getSize() > 0) {
-        // Переносим элемент из arr в run
         run.resize(run.getSize() + 1);
         run[run.getSize() - 1] = arr[0];
 
