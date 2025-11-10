@@ -97,31 +97,56 @@ Array mergeRuns(Array& left, Array& right) {
     return merged;
 }
 
-Array Run(Array& arr) {
+Array Run(Array& arr, int minrun) {
     Array run;
     if (arr.getSize() == 0) return run;
+
     bool needReverse = false;
     if (arr.getSize() > 1 && arr[0] > arr[1]) needReverse = true;
+
     int i = 0;
     run.resize(1);
     run[0] = arr[0];
+
+    // 1️⃣ Находим естественный run (возрастающий или убывающий)
     while (i + 1 < arr.getSize() && ((arr[i] <= arr[i + 1]) != needReverse)) {
         i++;
         run.resize(run.getSize() + 1);
         run[run.getSize() - 1] = arr[i];
     }
+
     if (needReverse) {
         for (int l = 0, r = run.getSize() - 1; l < r; l++, r--) {
             int tmp = run[l]; run[l] = run[r]; run[r] = tmp;
         }
     }
-    int used = run.getSize();
-    for (int j = used; j < arr.getSize(); j++) arr[j - used] = arr[j];
-    arr.resize(arr.getSize() - used);
+
+    int runSize = run.getSize();
+    int targetSize = (minrun < arr.getSize() + runSize) ? minrun : (runSize + arr.getSize());
+
+    while (run.getSize() < targetSize && arr.getSize() > 0) {
+        // Переносим элемент из arr в run
+        run.resize(run.getSize() + 1);
+        run[run.getSize() - 1] = arr[0];
+
+        for (int j = 1; j < arr.getSize(); j++)
+            arr[j - 1] = arr[j];
+        arr.resize(arr.getSize() - 1);
+    }
+
+    for (int j = 1; j < run.getSize(); j++) {
+        int key = run[j];
+        int k = j - 1;
+        while (k >= 0 && run[k] > key) {
+            run[k + 1] = run[k];
+            k--;
+        }
+        run[k + 1] = key;
+    }
+
     return run;
 }
-
-void collapseCheck(List& runs, Array& newRun) {
+void invariant(List& runs, Array& newRun) {
     runs.pushBack(newRun);
     while (runs.size() >= 3) {
         int n = runs.size();
@@ -145,11 +170,12 @@ void collapseCheck(List& runs, Array& newRun) {
 }
 
 void timsort(Array& arr) {
+    int minrun = getMinrun(arr.getSize());
     List runs;
     while (arr.getSize() > 0) {
-        Array run = Run(arr);
+        Array run = Run(arr, minrun);
         if (run.getSize() > 0)
-            collapseCheck(runs, run);
+            invariant(runs, run);
     }
     while (runs.size() > 1) {
         Array right = runs.peek();
@@ -157,7 +183,7 @@ void timsort(Array& arr) {
         Array left = runs.peek();
         runs.popBack();
         Array merged = mergeRuns(left, right);
-        collapseCheck(runs, merged);
+        invariant(runs, merged);
     }
     if (!runs.empty()) {
         Array sorted = runs.peek();
